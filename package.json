@@ -1,16 +1,21 @@
 {
-  "name": "loadtest",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "faker": "^5.1.0",
-    "mongoose": "^5.10.10"
-  }
+    "name": "loadtest",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index"
+    },
+    "keywords": [],
+    "homepage": "https://github.com/owner/project#readme",
+    "author": "",
+    "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/krassdanke/mongodb-case-insensitive-string-index.git"
+    },
+    "dependencies": {
+        "faker": "^5.1.0",
+        "mongoose": "^5.10.10"
+    }
 }
