@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const faker = require('faker');
 
+const DEFAULT_TEST_SET_SIZE = 100;
+
 mongoose.connect(
     `mongodb://${process.env.MONGO_URL || 'localhost'}/${
         process.env.MONGO_DBNAME || 'loadtest'
@@ -8,7 +10,7 @@ mongoose.connect(
     { useNewUrlParser: true }
 );
 
-const numberOfRessources = process.env.TEST_SET_SIZE || 100;
+const numberOfRessources = process.env.TEST_SET_SIZE || DEFAULT_TEST_SET_SIZE;
 
 const createItem = (modelBlueprint) => {
     return new modelBlueprint({
@@ -34,30 +36,36 @@ db.once('open', async function () {
     console.log('================== RESULTS =====================');
     console.log('================================================');
 
+    console.log(
+        `Showing numbers for ${
+            process.env.TEST_SET_SIZE || DEFAULT_TEST_SET_SIZE
+        } items per collection:`
+    );
+
     console.table([
         {
-            test: 'Normalization',
+            test: 'Exact string match',
             stage: 'Insertion',
             duration: `${durationA.insert[0]}s ${
                 durationA.insert[1] / 1000000
             }ms`,
         },
         {
-            test: 'Normalization',
+            test: 'Exact string match',
             stage: 'Index-Search',
             duration: `${durationA.index[0]}s ${
                 durationA.index[1] / 1000000
             }ms`,
         },
         {
-            test: 'Case-Insensitive Collation',
+            test: 'Case-insensitive collation',
             stage: 'Insertion',
             duration: `${durationB.insert[0]}s ${
                 durationB.insert[1] / 1000000
             }ms`,
         },
         {
-            test: 'Case-Insensitive Collation',
+            test: 'Case-insensitive collation',
             stage: 'Index-Search',
             duration: `${durationB.index[0]}s ${
                 durationB.index[1] / 1000000
@@ -82,15 +90,20 @@ const doNormalIndex = async () => {
 
         // Create n records and store the key in a separate list
         const startTimeNormalInsert = process.hrtime();
-        const findSet = [];
+        let findSet = [];
         for (let i = 0; i < numberOfRessources; i++) {
-            const item = createItem();
+            const item = createItem(TestModelA);
             findSet.push(item.email);
             console.log(`item no. ${i}: ${JSON.stringify(item)}`);
             await item.save();
         }
         const endTimeNormalInsert = process.hrtime(startTimeNormalInsert);
         logTime(endTimeNormalInsert);
+
+        findSet = findSet
+            .map((a) => ({ sort: Math.random(), value: a }))
+            .sort((a, b) => a.sort - b.sort)
+            .map((a) => a.value);
 
         // Find each of the records in our database
         const startTimeNormalIndex = process.hrtime();
@@ -141,6 +154,10 @@ const doCollationIndex = async () => {
             as faker mostly tries avoiding emails formatted this way.
         */
         findSet = findSet.map((e) => e.toUpperCase());
+        findSet = findSet
+            .map((a) => ({ sort: Math.random(), value: a }))
+            .sort((a, b) => a.sort - b.sort)
+            .map((a) => a.value);
 
         // Find each of the records in our database
         const startTimeCollationIndex = process.hrtime();
